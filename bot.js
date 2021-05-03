@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const lowdb = require("lowdb");
-const Filesync = require("lowdb/adapters/Filesync");
+const Filesync = require("lowdb/adapters/FileSync");
 const fetch = require("node-fetch");
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.TOKEN;
@@ -19,7 +19,25 @@ const db = lowdb(adapter);
 (async function init() {
   db.defaults({ data: [] }).write();
 })();
-// /register 121001@18
+
+function getDate() {
+  d = new Date();
+  utc = d.getTime() + d.getTimezoneOffset() * 60000;
+  nd = new Date(utc + 3600000 * +5.5).toLocaleDateString();
+
+  const val = nd.split(/[/]+/);
+  for (let i = 0; i < 2; i++) {
+    const element = +val[i];
+    if (element < 9) val[i] = `0${element}`;
+  }
+  let ans = "";
+
+  ans += val[0] + "-";
+  ans += val[1] + "-";
+  ans += val[2];
+  return ans;
+}
+
 bot.onText(/\/register (.+)/, (message, match) => {
   const chatId = message.chat.id;
   const msg = match[1].split("@");
@@ -38,7 +56,7 @@ bot.onText(/\/register (.+)/, (message, match) => {
       })
       .write();
     bot.sendMessage(chatId, "Registered,You will now recieve updates");
-    console.log(msg, "asd");
+    console.log(msg, "REGSITERED");
   } else {
     console.log(msg);
     bot.sendMessage(chatId, "Invalid Input");
@@ -46,11 +64,7 @@ bot.onText(/\/register (.+)/, (message, match) => {
 });
 
 async function getVaccine(pincode = 121001) {
-  var today = new Date();
-  let date = today.toJSON().slice(0, 10);
-  const nDate =
-    date.slice(8, 10) + "-" + date.slice(5, 7) + "-" + date.slice(0, 4);
-
+  const nDate = getDate();
   const data = await fetch(
     `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=${pincode}&date=${nDate}`
   )
