@@ -1,0 +1,46 @@
+{
+	"centers": [
+		{
+			"center_id": 174633,
+			"name": "Faridabad Medical Center",
+			"address": "",
+			"state_name": "Haryana",
+			"district_name": "Faridabad",
+			"block_name": "Faridabad",
+			"pincode": 121001,
+			"lat": 0,
+			"long": 0,
+			"from": "09:00:00",
+			"to": "18:00:00",
+			"fee_type": "Free",
+			"sessions": [
+				{
+					"session_id": "c67103a2-6fa5-44b5-8927-7515fb2fd443",
+					"date": "27-04-2021",
+					"available_capacity": 30,
+					"min_age_limit": 45,
+					"vaccine": "COVISHIELD",
+					"slots": [
+						"09:00AM-11:00AM",
+						"11:00AM-01:00PM",
+						"01:00PM-03:00PM",
+						"03:00PM-06:00PM"
+					]
+				},
+				{
+					"session_id": "c74aae51-c6ee-43b6-b8e4-f76bf2c45aa8",
+					"date": "29-04-2021",
+					"available_capacity": 5,
+					"min_age_limit": 45,
+					"vaccine": "COVISHIELD",
+					"slots": [
+						"09:00AM-11:00AM",
+						"11:00AM-01:00PM",
+						"01:00PM-03:00PM",
+						"03:00PM-06:00PM"
+					]
+				}
+			]
+		}
+	]
+}
