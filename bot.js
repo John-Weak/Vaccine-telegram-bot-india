@@ -28,7 +28,7 @@ function getDate() {
   const val = nd.split(/[/]+/);
   for (let i = 0; i < 2; i++) {
     const element = +val[i];
-    if (element < 9) val[i] = `0${element}`;
+    if (element <= 9) val[i] = `0${element}`;
   }
   let ans = "";
 
@@ -38,29 +38,51 @@ function getDate() {
   return ans;
 }
 
+bot.onText(/\/start/, (msg, _match) => {
+  const chatId = msg.chat.id;
+  if (isRegistered(chatId) == true) {
+    bot.sendMessage(chatId, "Welcome back");
+  }
+  bot.sendMessage(
+    chatId,
+    "Anti-Covid-Telegram Bot\n\nTo register use:\n\n/register Pincode@Age \nExample: Pincode is 110059 & Age is 21 \nthen command:\n /register 110059@21\n\nTo Unregister Use\n/unregister "
+  );
+});
+
+bot.onText(/\/ping/, (msg, _match) => {
+  const chatId = msg.chat.id;
+  bot.sendMessage(chatId, "Anti-Covid Bot is Working");
+});
+
 bot.onText(/\/register (.+)/, (message, match) => {
   const chatId = message.chat.id;
   const msg = match[1].split("@");
   const pincode = msg[0];
   const age = msg[1];
-  if (pincode.length == 6) {
-    //TODO:check overwrite
-    db.get("data")
-      .push({
-        user: message.chat.username,
-        firstName: message.chat.first_name,
-        lastname: message.chat.last_name,
-        chatId: chatId,
-        pincode: pincode,
-        age: age,
-      })
-      .write();
-    bot.sendMessage(chatId, "Registered,You will now recieve updates");
-    console.log(msg, "REGSITERED");
-  } else {
-    console.log(msg);
-    bot.sendMessage(chatId, "Invalid Input");
-  }
+  if (isRegistered(chatId) == false) {
+    if (pincode.length == 6) {
+      db.get("data")
+        .push({
+          user: message.chat.username,
+          firstName: message.chat.first_name,
+          lastname: message.chat.last_name,
+          chatId: chatId,
+          pincode: pincode,
+          age: age,
+        })
+        .write();
+      bot.sendMessage(chatId, "Registered,You will now recieve updates");
+      console.log(msg, "REGSITERED");
+    } else {
+      console.log(msg);
+      bot.sendMessage(chatId, "Invalid Input");
+    }
+  } else bot.sendMessage(chatId, "Already Registered");
+});
+
+bot.onText(/\/unregister/, (msg, _match) => {
+  db.get("data").remove({ chatId: msg.chat.id }).write();
+  bot.sendMessage(msg.chat.id, "User Unregisterd Successfully");
 });
 
 async function getVaccine(pincode = 121001) {
@@ -70,7 +92,6 @@ async function getVaccine(pincode = 121001) {
   )
     .then((response) => response.json())
     .then((data) => {
-      //console.log(data["centers"]);
       return data["centers"];
     })
     .catch((err) => {
@@ -91,12 +112,13 @@ async function getAvail(age = 18, data = []) {
           slots = slots + "\n" + val;
         });
         found.push({
-          name: val.name,
-          address: val.address,
+          name: center.name,
+          address: center.address,
           date: val.date,
           slots: slots,
           vaccine: val.vaccine,
           available_capacity: val.available_capacity,
+          fee: center.fee_type,
         });
       }
     });
@@ -106,6 +128,11 @@ async function getAvail(age = 18, data = []) {
 
 function sleep(ms = 2000) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRegistered(Id) {
+  if (db.get("data").find({ chatId: Id }).value() != undefined) return true;
+  else return false;
 }
 
 function getMap() {
@@ -128,7 +155,7 @@ async function vaccineTime(pincode, candidates = []) {
   const found = await getAvail(18, apiData);
 
   found.forEach((val) => {
-    const msg = `DATE = ${val.date}\nAVAILABLE_CAPACITY = ${val.available_capacity}\nName = ${val.name}\nAddress = ${val.address}\nSLOT:${val.slots}\nVACCINE_INFO = ${val.vaccine}`;
+    const msg = `DATE = ${val.date}\nAVAILABLE_CAPACITY = ${val.available_capacity}\nName = ${val.name}\nAddress = ${val.address}\nSLOT:${val.slots}\nVACCINE_INFO = ${val.vaccine}\nFee = ${val.fee}`;
     candidates.forEach((chatId) => {
       bot.sendMessage(chatId, msg);
     });
